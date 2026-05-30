@@ -1,20 +1,28 @@
-import { useEffect, useState } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+import Home from "./pages/Home";
+import Products from "./pages/Products";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+import "./App.css";
 
 function App() {
-  const [status, setStatus] = useState("loading...");
-
-  useEffect(() => {
-    fetch("http://localhost:3000/api/health")
-      .then((res) => res.json())
-      .then((data) => setStatus(data.status))
-      .catch(() => setStatus("backend холбогдсонгүй"));
-  }, []);
-
   return (
-    <main style={{ padding: 40, fontFamily: "Arial" }}>
-      <h1>SADCREAM Website</h1>
-      <p>Backend status: {status}</p>
-    </main>
+    <BrowserRouter>
+      <Navbar />
+
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/products" element={<Products />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+      </Routes>
+
+      <Footer />
+    </BrowserRouter>
   );
 }
 
