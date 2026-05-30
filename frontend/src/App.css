@@ -1,30 +1,15 @@
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  background: #fff7f3;
-  color: #241713;
-  font-family: Arial, sans-serif;
-}
-
-a {
-  text-decoration: none;
-  color: inherit;
-}
-
 .navbar {
   width: 100%;
   padding: 20px 8%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(255, 247, 243, 0.8);
+  background: rgba(255, 247, 243, 0.85);
   backdrop-filter: blur(18px);
   position: sticky;
   top: 0;
   z-index: 10;
+  border-bottom: 1px solid #f0d4cc;
 }
 
 .logo {
@@ -41,7 +26,7 @@ a {
 }
 
 .navbar nav a {
-  font-weight: 600;
+  font-weight: 700;
   color: #4b2a22;
 }
 
@@ -50,6 +35,10 @@ a {
   border-radius: 999px;
   background: #8b3a2e;
   color: white !important;
+}
+
+.home {
+  min-height: 80vh;
 }
 
 .hero {
@@ -67,7 +56,7 @@ a {
   border-radius: 999px;
   background: #ffe1d6;
   color: #8b3a2e;
-  font-weight: 700;
+  font-weight: 800;
   margin-bottom: 20px;
 }
 
@@ -95,7 +84,7 @@ a {
 .secondary-btn {
   padding: 14px 24px;
   border-radius: 16px;
-  font-weight: 800;
+  font-weight: 900;
 }
 
 .primary-btn {
@@ -117,7 +106,7 @@ a {
   width: 330px;
   height: 430px;
   border-radius: 42px;
-  background: linear-gradient(145deg, #fff, #ffd9cf);
+  background: linear-gradient(145deg, #ffffff, #ffd9cf);
   box-shadow: 0 30px 80px rgba(139, 58, 46, 0.2);
   display: flex;
   flex-direction: column;
@@ -189,7 +178,8 @@ a {
 }
 
 .product-card button,
-.auth-card button {
+.auth-card button,
+.logout-btn {
   width: 100%;
   margin-top: 18px;
   padding: 13px;
@@ -197,7 +187,7 @@ a {
   border-radius: 14px;
   background: #8b3a2e;
   color: white;
-  font-weight: 800;
+  font-weight: 900;
   cursor: pointer;
 }
 
@@ -214,6 +204,16 @@ a {
   max-width: 430px;
 }
 
+.auth-card h1 {
+  margin: 0;
+  font-size: 42px;
+  color: #311710;
+}
+
+.auth-card p {
+  color: #6b4a41;
+}
+
 .auth-card input {
   width: 100%;
   padding: 14px;
@@ -221,6 +221,16 @@ a {
   border-radius: 14px;
   border: 1px solid #e2c2ba;
   outline: none;
+  font-size: 15px;
+}
+
+.error-message {
+  margin: 14px 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #ffe1df;
+  color: #9f1d1d;
+  font-weight: 700;
 }
 
 .footer {
