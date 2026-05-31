@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { api } from "../services/api";
 
 function Register() {
@@ -60,6 +60,10 @@ function Register() {
         <button type="button" onClick={handleRegister}>
           Бүртгүүлэх
         </button>
+
+        <p className="auth-link">
+          Account байгаа юу? <Link to="/login">Нэвтрэх</Link>
+        </p>
       </form>
     </main>
   );

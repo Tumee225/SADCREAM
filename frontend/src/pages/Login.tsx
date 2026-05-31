@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { api } from "../services/api";
 
 function Login() {
@@ -51,6 +51,10 @@ function Login() {
         <button type="button" onClick={handleLogin}>
           Нэвтрэх
         </button>
+
+        <p className="auth-link">
+          Account байхгүй юу? <Link to="/register">Бүртгүүлэх</Link>
+        </p>
       </form>
     </main>
   );
