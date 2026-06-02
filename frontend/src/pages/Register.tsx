@@ -4,11 +4,9 @@ import { api } from "../services/api";
 
 function Register() {
   const navigate = useNavigate();
-
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [message, setMessage] = useState("");
 
   const handleRegister = async () => {
@@ -21,7 +19,6 @@ function Register() {
 
       localStorage.setItem("sadcream_token", res.data.token);
       localStorage.setItem("sadcream_user", JSON.stringify(res.data.user));
-
       navigate("/dashboard");
     } catch (error: any) {
       setMessage(error.response?.data?.message || "Бүртгэл амжилтгүй боллоо");
@@ -31,8 +28,9 @@ function Register() {
   return (
     <main className="auth-page">
       <form className="auth-card">
+        <span className="badge">Join the drop</span>
         <h1>Register</h1>
-        <p>Шинэ хэрэглэгчээр бүртгүүлэх</p>
+        <p>Sadcream community-д бүртгүүлээд limited release-үүдээ хадгалаарай.</p>
 
         {message && <div className="error-message">{message}</div>}
 
@@ -40,21 +38,19 @@ function Register() {
           type="text"
           placeholder="Full name"
           value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
+          onChange={(event) => setFullName(event.target.value)}
         />
-
         <input
           type="email"
           placeholder="Email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(event) => setEmail(event.target.value)}
         />
-
         <input
           type="password"
           placeholder="Password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(event) => setPassword(event.target.value)}
         />
 
         <button type="button" onClick={handleRegister}>

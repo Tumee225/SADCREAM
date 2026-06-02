@@ -1,17 +1,26 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { CSSProperties } from "react";
+import { Link } from "react-router-dom";
+import { Minus, Plus, QrCode, Trash2 } from "lucide-react";
+import { api } from "../services/api";
+import type { CartItem } from "../types";
 
-type CartItem = {
-  id: number;
-  name: string;
-  category: string;
-  price: number;
-  image: string;
-  description: string;
-  quantity: number;
+const deliveryFees = {
+  "ub-a-zone": 10000,
+  "ub-other": 15000,
+  local: 0,
 };
 
 function Cart() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [customerName, setCustomerName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"qpay" | "socialpay" | "operator">("qpay");
+  const [deliveryArea, setDeliveryArea] = useState<"ub-a-zone" | "ub-other" | "local">(
+    "ub-a-zone"
+  );
+  const [message, setMessage] = useState("");
 
   const loadCart = () => {
     const savedCart = localStorage.getItem("sadcream_cart");
@@ -28,100 +37,169 @@ function Cart() {
     window.dispatchEvent(new Event("cartUpdated"));
   };
 
-  const increaseQty = (id: number) => {
-    const updated = cartItems.map((item) =>
-      item.id === id ? { ...item, quantity: item.quantity + 1 } : item
-    );
-
-    saveCart(updated);
-  };
-
-  const decreaseQty = (id: number) => {
+  const updateQuantity = (id: number, selectedSize: string | undefined, delta: number) => {
     const updated = cartItems
       .map((item) =>
-        item.id === id ? { ...item, quantity: item.quantity - 1 } : item
+        item.id === id && item.selectedSize === selectedSize
+          ? { ...item, quantity: item.quantity + delta }
+          : item
       )
       .filter((item) => item.quantity > 0);
 
     saveCart(updated);
   };
 
-  const removeItem = (id: number) => {
-    const updated = cartItems.filter((item) => item.id !== id);
-    saveCart(updated);
+  const removeItem = (id: number, selectedSize: string | undefined) => {
+    saveCart(cartItems.filter((item) => item.id !== id || item.selectedSize !== selectedSize));
   };
 
-  const clearCart = () => {
-    saveCart([]);
-  };
-
-  const totalPrice = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
+  const subtotal = useMemo(
+    () => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
+    [cartItems]
   );
+  const deliveryFee = deliveryFees[deliveryArea];
+  const totalPrice = subtotal + deliveryFee;
+
+  const submitOrder = async () => {
+    try {
+      const res = await api.post("/orders", {
+        customerName,
+        phone,
+        address,
+        paymentMethod,
+        deliveryArea,
+        items: cartItems,
+      });
+
+      setMessage(res.data.message);
+      saveCart([]);
+    } catch (error: any) {
+      setMessage(error.response?.data?.message || "Захиалга илгээхэд алдаа гарлаа");
+    }
+  };
 
   return (
     <main className="page cart-page">
       <div className="shop-header">
-        <span className="badge">SADCREAM CART</span>
-        <h1>Миний сагс</h1>
-        <p className="page-desc">Таны сонгосон бүтээгдэхүүнүүд</p>
+        <span className="badge">Sadcream cart</span>
+        <h1>Захиалга</h1>
+        <p className="page-desc">QPay, SocialPay эсвэл оператороор холбогдох flow.</p>
       </div>
 
       {cartItems.length === 0 ? (
         <div className="empty-cart">
-          <h2>Сагс хоосон байна</h2>
-          <p>Дэлгүүрээс бүтээгдэхүүн сонгоод сагсанд нэмээрэй.</p>
-          <a href="/products">Дэлгүүр рүү очих</a>
+          <h2>{message || "Сагс хоосон байна"}</h2>
+          <p>Limited drop дуусахаас өмнө өөрийн fit-ээ сонгоорой.</p>
+          <Link to="/products">Shop руу очих</Link>
         </div>
       ) : (
         <div className="cart-layout">
           <div className="cart-list">
             {cartItems.map((item) => (
-              <div className="cart-item" key={item.id}>
-                <div className={`cart-image ${item.category}`}>
-                  {item.category.toUpperCase()}
+              <article className="cart-item" key={`${item.id}-${item.selectedSize}`}>
+                <div
+                  className={`cart-image ${item.category}`}
+                  style={{ "--accent": item.accent } as CSSProperties}
+                >
+                  {item.collection}
                 </div>
 
                 <div className="cart-info">
                   <h3>{item.name}</h3>
-                  <p>{item.description}</p>
+                  <p>
+                    Size {item.selectedSize || item.sizes[0]} · {item.description}
+                  </p>
                   <strong>{item.price.toLocaleString()}₮</strong>
                 </div>
 
                 <div className="cart-qty">
-                  <button onClick={() => decreaseQty(item.id)}>-</button>
+                  <button onClick={() => updateQuantity(item.id, item.selectedSize, -1)}>
+                    <Minus size={16} />
+                  </button>
                   <span>{item.quantity}</span>
-                  <button onClick={() => increaseQty(item.id)}>+</button>
+                  <button onClick={() => updateQuantity(item.id, item.selectedSize, 1)}>
+                    <Plus size={16} />
+                  </button>
                 </div>
 
-                <button className="remove-btn" onClick={() => removeItem(item.id)}>
-                  Устгах
+                <button className="remove-btn" onClick={() => removeItem(item.id, item.selectedSize)}>
+                  <Trash2 size={16} />
                 </button>
-              </div>
+              </article>
             ))}
           </div>
 
-          <div className="cart-summary">
-            <h2>Захиалгын дүн</h2>
+          <aside className="cart-summary">
+            <h2>Checkout</h2>
 
-            <div className="summary-row">
-              <span>Нийт бараа</span>
-              <strong>
-                {cartItems.reduce((sum, item) => sum + item.quantity, 0)}
-              </strong>
+            {message && <div className="order-message">{message}</div>}
+
+            <label>
+              Нэр
+              <input value={customerName} onChange={(event) => setCustomerName(event.target.value)} />
+            </label>
+            <label>
+              Утас
+              <input value={phone} onChange={(event) => setPhone(event.target.value)} />
+            </label>
+            <label>
+              Хаяг
+              <textarea value={address} onChange={(event) => setAddress(event.target.value)} />
+            </label>
+
+            <label>
+              Төлбөр
+              <select
+                value={paymentMethod}
+                onChange={(event) =>
+                  setPaymentMethod(event.target.value as "qpay" | "socialpay" | "operator")
+                }
+              >
+                <option value="qpay">QPay QR</option>
+                <option value="socialpay">SocialPay</option>
+                <option value="operator">Дугаараа үлдээгээд оператороор</option>
+              </select>
+            </label>
+
+            <label>
+              Хүргэлт
+              <select
+                value={deliveryArea}
+                onChange={(event) =>
+                  setDeliveryArea(event.target.value as "ub-a-zone" | "ub-other" | "local")
+                }
+              >
+                <option value="ub-a-zone">УБ А бүс - 10k</option>
+                <option value="ub-other">УБ бусад бүс - 15k</option>
+                <option value="local">Орон нутгийн унаанд тавина</option>
+              </select>
+            </label>
+
+            <div className="qr-preview">
+              <QrCode size={44} />
+              <span>{paymentMethod === "operator" ? "Оператор холбогдоно" : "QR demo"}</span>
             </div>
 
+            <div className="summary-row">
+              <span>Бараа</span>
+              <strong>{subtotal.toLocaleString()}₮</strong>
+            </div>
+            <div className="summary-row">
+              <span>Хүргэлт</span>
+              <strong>{deliveryFee.toLocaleString()}₮</strong>
+            </div>
             <div className="summary-row total">
-              <span>Нийт үнэ</span>
+              <span>Нийт</span>
               <strong>{totalPrice.toLocaleString()}₮</strong>
             </div>
 
-            <button className="checkout-btn">Захиалах</button>
-            <button className="clear-btn" onClick={clearCart}>
+            <button className="checkout-btn" onClick={submitOrder}>
+              Захиалга илгээх
+            </button>
+            <button className="clear-btn" onClick={() => saveCart([])}>
               Сагс хоослох
             </button>
-          </div>
+          </aside>
         </div>
       )}
     </main>
